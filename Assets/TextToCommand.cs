@@ -159,6 +159,7 @@ public class TextToCommand : MonoBehaviour
     }
 }
 
+//Taken from iterwebs
 class WordsToNumbers  
 {  
     private static Dictionary<string, long> numberTable = new Dictionary<string, long>{  
