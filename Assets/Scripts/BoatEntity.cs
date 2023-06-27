@@ -21,6 +21,7 @@ public class BoatEntity : MonoBehaviour
     public bool evasionMode = false;
     //public Vector3 target = Vector3.zero;
     public List<Vector3> pathList = new List<Vector3>();
+    public bool playerMove = false;
     public int moveState = 0;
     //0 = Dead
     //1 = Hold Positon
@@ -61,30 +62,38 @@ public class BoatEntity : MonoBehaviour
         attractPotential = Vector3.forward;
         float range = maxSpeed-minSpeed;
         Vector3 dif;
-        foreach(BoatEntity ent in EntityMgr.inst.boatEntities)
-        {
-            if(ent.ID == ID)
-                continue;
+        if(moveState!=0 && moveState!=3)
+        { 
+            foreach(BoatEntity ent in EntityMgr.inst.boatEntities)
+            {
+                if(ent.ID == ID)
+                    continue;
 
-            dif = ent.position - position;
-            magnitude += dif.magnitude;
-            //if(dif.magnitude<AIMgr.inst.tooClose * ent.mass && !isSelected && !evasionMode)
-                //BoatRulesAvoidCrash(ent);
-            float closestDist = Utils.ClosestDistOfApproach(position, velocity, ent.position, ent.position, out Vector3 p1, out Vector3 p2);
-            if (magnitude!=0.0f && closestDist < AIMgr.inst.tooClose * ent.mass)
-                repelPotential += dif.normalized * ent.mass * (AIMgr.inst.aAvoidance * Mathf.Pow(dif.magnitude, AIMgr.inst.eAvoidance));
-        }
-        
-        
-        Vector3 netPotential = Vector3.zero;
-        if(moveState!=0)
-        {   
+                dif = ent.position - position;
+                magnitude = dif.magnitude;
+                float closestDist = Utils.ClosestDistOfApproach(position, velocity, ent.position, ent.position);
+                if ((closestDist < AIMgr.inst.tooClose * ent.mass || isCBDR(ent)) && magnitude<AIMgr.inst.potentialDistanceMax)
+                    repelPotential += dif.normalized * ent.mass * (AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance));
+            }
+
+            foreach(BouyEnt ent in EntityMgr.inst.bouyEntities)
+            {
+                dif = ent.transform.position - position;
+                magnitude = dif.magnitude;
+                //float closestDist = Utils.ClosestDistOfApproach(position, velocity, ent.transform.position, ent.transform.position);
+                if (magnitude < AIMgr.inst.tooClose * ent.mass)
+                    repelPotential += dif.normalized * ent.mass * (AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance));
+            }
+            
+            
+            Vector3 netPotential = Vector3.zero;
+          
             dif = Vector3.zero;
             if(moveState==2)
                 dif = pathList[0] - position;
             sum = dif;
             magnitude = dif.magnitude;
-            if(pathList.Count>0)
+            if(pathList.Count>0 && !playerMove)
             {
                 if(myDirection==direction.West && pathList[0].x<position.x)
                 {
@@ -103,6 +112,10 @@ public class BoatEntity : MonoBehaviour
                     nextMove();
                 }
             }
+            else if(playerMove && (pathList[0]-position).magnitude < 20f)
+            {
+                nextMove();
+            }
             attractPotential = sum.normalized * AIMgr.inst.aAttraction * Mathf.Pow(magnitude, AIMgr.inst.eAttraction);
             //Potenial Movers
             netPotential = attractPotential - repelPotential;
@@ -116,12 +129,11 @@ public class BoatEntity : MonoBehaviour
             }
         }
         
-        
         //Selection Toggle
         //selectionCircle.SetActive(isSelected);
         desiredSpeed=Mathf.Clamp(desiredSpeed,minSpeed,maxSpeed);
         //Acceleration Control
-        if(Utils.ApproxEqual(speed,desiredSpeed))
+        if(Utils.ApproxEqual(speed,desiredSpeed, EntityMgr.inst.gameSpeed))
         {;}
         else if(speed < desiredSpeed)
         {
@@ -133,7 +145,7 @@ public class BoatEntity : MonoBehaviour
         }
 
         //Turn Control
-        if(Utils.ApproxEqual(heading,desiredHeading))
+        if(Utils.ApproxEqual(heading,desiredHeading, EntityMgr.inst.gameSpeed))
         {;}
         else if(Utils.AngleDifrenceNegatives(heading,desiredHeading) > 0)
         {
@@ -161,7 +173,7 @@ public class BoatEntity : MonoBehaviour
     public void FindPath()
     {
         Vector3 nextMove = ZoneMgr.inst.FindNextMover(position,myDirection);
-        if(nextMove==Vector3.zero)
+        if(nextMove==Vector3.zero && (myDirection == direction.West || myDirection == direction.East))
         {
             Destroy(this.gameObject);
             ZoneMgr.inst.SummonShip();
@@ -184,7 +196,8 @@ public class BoatEntity : MonoBehaviour
                 myDirection=direction.East;
             else
                 myDirection=direction.West;
-            FindPath(pathList[pathList.Count-1]);
+            if(pathList.Count>0)
+                FindPath(pathList[pathList.Count-1]);
         }
         else
             Move(ZoneMgr.inst.GetEnd(myDirection));
@@ -212,6 +225,20 @@ public class BoatEntity : MonoBehaviour
         pathList.Insert(0,newTarget);
     }
 
+    bool isCBDR(BoatEntity otherShip)
+    {
+        //Constant Bearing
+        if(!Utils.ApproxEqual(otherShip.heading,otherShip.desiredHeading))
+            return false;
+        //Decreasing Range
+        float curRange=(position-otherShip.position).magnitude;
+        float nextRange=(position+(velocity*Time.deltaTime)-(otherShip.position+(otherShip.velocity*Time.deltaTime))).magnitude;
+        if(!(nextRange<curRange))
+            return false;
+
+        return true;
+        
+    }
     void BoatRulesAvoidCrash(BoatEntity otherShip)
     {
         if(!evasionMode)
@@ -244,6 +271,7 @@ public class BoatEntity : MonoBehaviour
         moveState=1;
         pathList.Clear();
         desiredSpeed=0;
+        playerMove=false;
     }
 
     private void OnGUI() 

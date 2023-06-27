@@ -271,6 +271,12 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.whisper.unity": {
+      "version": "file:com.whisper.unity",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "voxell.speech": {
       "version": "file:UnityTTS-master",
       "depth": 0,

@@ -18,10 +18,15 @@ public static class Utils
         return bounds;
     }
 
-    public static float Epsilon = 0.5f;
+    public static float Epsilon = 1f;
     public static bool ApproxEqual(float a, float b)
     {
         return(Mathf.Abs(a-b) < Epsilon);
+    }
+
+    public static bool ApproxEqual(float a, float b, float mag)
+    {
+        return(Mathf.Abs(a-b) < Epsilon * mag);
     }
 
     public static float AngleDifrenceNegatives(float a, float b)
@@ -102,8 +107,9 @@ public static class Utils
         return (-Vector3.Dot(w0, dv)/dv2);
     }
 
-    public static float ClosestDistOfApproach(Vector3 pos1, Vector3 vel1, Vector3 pos2, Vector3 vel2, out Vector3 p1, out Vector3 p2)
+    public static float ClosestDistOfApproach(Vector3 pos1, Vector3 vel1, Vector3 pos2, Vector3 vel2)
     {
+        Vector3 p1, p2;
         var t = ClosestTimeOfApproach(pos1,vel1,pos2,vel2);
         p1 = pos1 + (t * vel1);
         p2 = pos2 + (t*vel2);

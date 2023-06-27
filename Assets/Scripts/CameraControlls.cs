@@ -25,7 +25,7 @@ public class CameraControlls : MonoBehaviour
     
     public Vector3 currentPitchEulerAngles= Vector3.zero;
     public Vector3 currentYawEulerAngles= Vector3.zero;
-    bool isRTSMode = true;
+    public bool isRTSMode = true;
     // Update is called once per frame
     void Update()
     {
@@ -81,11 +81,18 @@ public class CameraControlls : MonoBehaviour
 
         if(Input.GetKeyUp(KeyCode.C))
         {
-            if(isRTSMode)
+            if(isRTSMode && SelectionMgr.inst.selectedIDs.Count==1)
             {
-                YawNode.transform.SetParent(SelectionMgr.inst.selectedEntity.myCameraNode.transform);
+                BoatEntity boat = EntityMgr.inst.boatEntities[SelectionMgr.inst.selectedIDs[0]];
+                YawNode.transform.SetParent(boat.myCameraNode.transform);
                 YawNode.transform.localPosition = Vector3.zero;
                 YawNode.transform.localEulerAngles = Vector3.zero;
+
+                SelectionMgr.inst.selectedEntity = boat;
+                boat.Stop();
+                boat.moveState = 3;
+                boat.desiredHeading=boat.heading;
+                boat.desiredSpeed=boat.speed;
             }
             else
             {

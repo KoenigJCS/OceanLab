@@ -61,11 +61,13 @@ public class ControlMgr : MonoBehaviour
             
             if(newTarget && Input.GetKey(KeyCode.LeftControl))
             {
+                selectedEntity.playerMove = true;
                 selectedEntity.Move(hit.point);
             }
             else if(newTarget)
             {
                 selectedEntity.Stop();
+                selectedEntity.playerMove = true;
                 selectedEntity.Move(hit.point);
             }
             
