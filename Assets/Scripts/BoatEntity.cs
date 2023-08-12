@@ -198,8 +198,12 @@ public class BoatEntity : MonoBehaviour
     public void ObliterateThis()
     {
         Destroy(gameObject);
-            ZoneMgr.inst.SummonShip();
-            EntityMgr.inst.boatEntities.RemoveAt(EntityMgr.inst.boatEntities.IndexOf(this));
+        ZoneMgr.inst.SummonShip();
+        EntityMgr.inst.boatEntities.Remove(this);
+        if(isSelected)
+        {
+            SelectionMgr.inst.selectedBoats.Remove(this);
+        }
     }
     
     private static int _tracker = 0;
