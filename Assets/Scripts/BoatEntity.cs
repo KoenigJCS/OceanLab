@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
 
 public class BoatEntity : MonoBehaviour
 {
@@ -32,7 +33,7 @@ public class BoatEntity : MonoBehaviour
     public float maxSpeed = 40;
     public float minSpeed =-20;
     public float mass;
-    public direction myDirection;
+    public Direction myDirection;
     public GameObject myCameraNode;
     void Start()
     {
@@ -45,15 +46,30 @@ public class BoatEntity : MonoBehaviour
         line.startColor = Color.cyan;
         line.endColor = Color.cyan;
         ID = EntityMgr.inst.AddBoat(this);
+        listOFunctionsToRunInMain = new Queue<System.Action>();
     }
 
     Vector3 eulerRotation = Vector3.zero;
     // Update is called once per frame
+    Queue<System.Action> listOFunctionsToRunInMain;
+    public void QueueMainThreadFunction(System.Action someFunction)
+    {
+        listOFunctionsToRunInMain.Enqueue(someFunction);
+    }
     void Update()
     {
+        while(listOFunctionsToRunInMain.Count>0)
+        {
+            System.Action functionToRun =  listOFunctionsToRunInMain.Dequeue();
+            functionToRun();
+        }
         if(moveState==1 && !isSelected)
         {
             FindPath();
+            // lock(EntityMgr.inst.pathlessBoats)
+            // {
+            //     EntityMgr.inst.pathlessBoats.Add(this);
+            // }
         }
         //Potential Feilds
         float magnitude = 0;
@@ -72,7 +88,7 @@ public class BoatEntity : MonoBehaviour
                 dif = ent.position - position;
                 magnitude = dif.magnitude;
                 float closestDist = Utils.ClosestDistOfApproach(position, velocity, ent.position, ent.position);
-                if ((closestDist < AIMgr.inst.tooClose * ent.mass || isCBDR(ent)) && magnitude<AIMgr.inst.potentialDistanceMax)
+                if ((closestDist < AIMgr.inst.tooClose * ent.mass || IsCBDR(ent)) && magnitude<AIMgr.inst.potentialDistanceMax)
                     repelPotential += dif.normalized * ent.mass * (AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance));
             }
 
@@ -84,10 +100,7 @@ public class BoatEntity : MonoBehaviour
                 if (magnitude < AIMgr.inst.tooClose * ent.mass)
                     repelPotential += dif.normalized * ent.mass * (AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance));
             }
-            
-            
-            Vector3 netPotential = Vector3.zero;
-          
+
             dif = Vector3.zero;
             if(moveState==2)
                 dif = pathList[0] - position;
@@ -95,31 +108,31 @@ public class BoatEntity : MonoBehaviour
             magnitude = dif.magnitude;
             if(pathList.Count>0 && !playerMove)
             {
-                if(myDirection==direction.West && pathList[0].x<position.x)
+                if(myDirection==Direction.West && pathList[0].x<position.x)
                 {
-                    nextMove();
+                    NextMove();
                 }
-                else if(myDirection==direction.East && pathList[0].x>position.x)
+                else if(myDirection==Direction.East && pathList[0].x>position.x)
                 {
-                    nextMove();
+                    NextMove();
                 }
-                if(myDirection==direction.AcrossN && pathList[0].z>position.z)
+                if(myDirection==Direction.AcrossN && pathList[0].z>position.z)
                 {
-                    nextMove();
+                    NextMove();
                 }
-                else if(myDirection==direction.AcrossS && pathList[0].z<position.z)
+                else if(myDirection==Direction.AcrossS && pathList[0].z<position.z)
                 {
-                    nextMove();
+                    NextMove();
                 }
             }
             else if(playerMove && (pathList[0]-position).magnitude < 20f)
             {
-                nextMove();
+                NextMove();
             }
             attractPotential = sum.normalized * AIMgr.inst.aAttraction * Mathf.Pow(magnitude, AIMgr.inst.eAttraction);
             //Potenial Movers
-            netPotential = attractPotential - repelPotential;
-            if(moveState==2)
+            Vector3 netPotential = attractPotential - repelPotential;
+            if (moveState==2)
             {
                 desiredHeading=Utils.ConvertTo360(Mathf.Rad2Deg * Mathf.Atan2(netPotential.x, netPotential.z));
                 desiredSpeed=minSpeed + ((Mathf.Cos(Utils.AngleDifrenceNegatives(desiredHeading, heading) * Mathf.Deg2Rad) + 1)/2.0f)*range;
@@ -172,16 +185,29 @@ public class BoatEntity : MonoBehaviour
 
     public void FindPath()
     {
+        Debug.Log("Here!");
         Vector3 nextMove = ZoneMgr.inst.FindNextMover(position,myDirection);
-        if(nextMove==Vector3.zero && (myDirection == direction.West || myDirection == direction.East))
+        if(nextMove==Vector3.zero && (myDirection == Direction.West || myDirection == Direction.East))
         {
-            Destroy(this.gameObject);
-            ZoneMgr.inst.SummonShip();
-            EntityMgr.inst.boatEntities.RemoveAt(EntityMgr.inst.boatEntities.IndexOf(this));
+            QueueMainThreadFunction(ObliterateThis);
         }
         else
             FindPath(nextMove);
     }
+
+    public void ObliterateThis()
+    {
+        Destroy(gameObject);
+            ZoneMgr.inst.SummonShip();
+            EntityMgr.inst.boatEntities.RemoveAt(EntityMgr.inst.boatEntities.IndexOf(this));
+    }
+    
+    private static int _tracker = 0;
+    private static ThreadLocal<System.Random> _random = new(() => {
+        var seed = (int)(System.Environment.TickCount & 0xFFFFFF00 | (byte)(Interlocked.Increment(ref _tracker) % 255));
+        var random = new System.Random(seed);
+        return random;
+    });
 
     public void FindPath(Vector3 nextMove)
     {
@@ -190,14 +216,14 @@ public class BoatEntity : MonoBehaviour
             Move(nextMove);
             nextMove = ZoneMgr.inst.FindNextMover(nextMove,myDirection);
         }
-        if(myDirection==direction.AcrossN || myDirection==direction.AcrossS)
+        if(myDirection==Direction.AcrossN || myDirection==Direction.AcrossS)
         {
-            if(Random.Range(0,2)==1)
-                myDirection=direction.East;
+            if(_random.Value.Next() % 2 == 1)
+                myDirection=Direction.East;
             else
-                myDirection=direction.West;
+                myDirection=Direction.West;
             if(pathList.Count>0)
-                FindPath(pathList[pathList.Count-1]);
+                FindPath(pathList[^1]);
         }
         else
             Move(ZoneMgr.inst.GetEnd(myDirection));
@@ -206,26 +232,35 @@ public class BoatEntity : MonoBehaviour
     public void Move(Vector3 newTarget)
     {
         moveState=2;
-        pathList.Add(newTarget);
+        lock(pathList)
+        {
+            pathList.Add(newTarget);
+        }
     }
-    public bool nextMove()
+    public bool NextMove()
     {
         evasionMode=false;
         if(pathList.Count==0)
             return false;
-        pathList.RemoveAt(0);
+            lock(pathList)
+        {
+            pathList.RemoveAt(0);
+        }
         if(pathList.Count==0)
             Stop();
         return true;
     }
 
-    public void firstMove(Vector3 newTarget)
+    public void FirstMove(Vector3 newTarget)
     {
         moveState=2;
-        pathList.Insert(0,newTarget);
+        lock(pathList)
+        {
+            pathList.Insert(0,newTarget);
+        }
     }
 
-    bool isCBDR(BoatEntity otherShip)
+    bool IsCBDR(BoatEntity otherShip)
     {
         //Constant Bearing
         if(!Utils.ApproxEqual(otherShip.heading,otherShip.desiredHeading))
@@ -254,7 +289,7 @@ public class BoatEntity : MonoBehaviour
             {
                 Vector3 otherSternPos = otherShip.position + (otherShip.transform.forward * -1 * otherShip.mass);
                 evasionMode = true;
-                firstMove(otherSternPos);   
+                FirstMove(otherSternPos);   
             }
             else
             {
@@ -269,7 +304,10 @@ public class BoatEntity : MonoBehaviour
     public void Stop()
     {
         moveState=1;
-        pathList.Clear();
+        lock(pathList)
+        {
+            pathList.Clear();
+        }
         desiredSpeed=0;
         playerMove=false;
     }

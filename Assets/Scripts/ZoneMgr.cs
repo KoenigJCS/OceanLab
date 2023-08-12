@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 public class ZoneMgr : MonoBehaviour
@@ -42,7 +43,7 @@ public class ZoneMgr : MonoBehaviour
                 moveZoneEnts.Add(item);
                 break;
             case ZoneEnt.zoneType.Ender:
-                if(item.myDirection == direction.West)
+                if(item.myDirection == Direction.West)
                     westEndZone = item;
                 else
                     eastEndZone = item;
@@ -74,17 +75,17 @@ public class ZoneMgr : MonoBehaviour
             BoatEntity ent = newBoat.GetComponent<BoatEntity>();
             switch (curZone.myDirection)
             {
-                case direction.West:
-                    ent.myDirection = direction.West;
+                case Direction.West:
+                    ent.myDirection = Direction.West;
                     break;
-                case direction.East:
-                    ent.myDirection = direction.East;
+                case Direction.East:
+                    ent.myDirection = Direction.East;
                     break;
-                case direction.AcrossN:
-                    ent.myDirection = direction.AcrossN;
+                case Direction.AcrossN:
+                    ent.myDirection = Direction.AcrossN;
                     break;
-                case direction.AcrossS:
-                    ent.myDirection = direction.AcrossS;
+                case Direction.AcrossS:
+                    ent.myDirection = Direction.AcrossS;
                     break;
                 default:
                     break;
@@ -107,17 +108,17 @@ public class ZoneMgr : MonoBehaviour
         BoatEntity ent = newBoat.GetComponent<BoatEntity>();
         switch (curZone.myDirection)
         {
-            case direction.West:
-                ent.myDirection = direction.West;
+            case Direction.West:
+                ent.myDirection = Direction.West;
                 break;
-            case direction.East:
-                ent.myDirection = direction.East;
+            case Direction.East:
+                ent.myDirection = Direction.East;
                 break;
-            case direction.AcrossN:
-                ent.myDirection = direction.AcrossN;
+            case Direction.AcrossN:
+                ent.myDirection = Direction.AcrossN;
                 break;
-            case direction.AcrossS:
-                ent.myDirection = direction.AcrossS;
+            case Direction.AcrossS:
+                ent.myDirection = Direction.AcrossS;
                 break;
             default:
                 break;
@@ -127,19 +128,19 @@ public class ZoneMgr : MonoBehaviour
         //ent.FindPath();
     }
 
-    public Vector3 FindNextMover(Vector3 curPos, direction curDirection)
+    public Vector3 FindNextMover(Vector3 curPos, Direction curDirection)
     {
         Vector3 desination = Vector3.zero;
         float minDelta = float.MaxValue;
         ZoneEnt closestZone = null;
         foreach(ZoneEnt zone in moveZoneEnts)
         {
-            Vector3 delta = zone.transform.position - curPos;
+            Vector3 delta = zone.myPos - curPos;
             
 
             if(zone.myDirection != curDirection)
                 continue;
-            else if(curDirection == direction.West)
+            else if(curDirection == Direction.West)
             {
                 int deltaX = (int) (zone.myArea.xMin - curPos.x);
                 if(delta.magnitude < minDelta && deltaX>100)
@@ -148,7 +149,7 @@ public class ZoneMgr : MonoBehaviour
                     closestZone = zone;
                 }
             }
-            else if(curDirection == direction.East)
+            else if(curDirection == Direction.East)
             {
                 int deltaX = (int) (curPos.x - zone.myArea.xMax);
                 if(delta.magnitude < minDelta && deltaX>100)
@@ -157,7 +158,7 @@ public class ZoneMgr : MonoBehaviour
                     closestZone = zone;
                 }
             }
-            else if(curDirection == direction.AcrossN)
+            else if(curDirection == Direction.AcrossN)
             {
                 int deltaZ = (int) (zone.myArea.yMin - curPos.z);
                 if(delta.magnitude < minDelta && deltaZ>100 && delta.magnitude < 500.0f)
@@ -166,7 +167,7 @@ public class ZoneMgr : MonoBehaviour
                     closestZone = zone;
                 }
             }
-            else if(curDirection == direction.AcrossS)
+            else if(curDirection == Direction.AcrossS)
             {
                 int deltaZ = (int) (curPos.z - zone.myArea.yMax);
                 if(delta.magnitude < minDelta && deltaZ>100 && delta.magnitude < 500.0f)
@@ -184,17 +185,24 @@ public class ZoneMgr : MonoBehaviour
         return desination;
     }
 
-    public Vector3 GetEnd(direction curDirection)
+    public Vector3 GetEnd(Direction curDirection)
     {
-        if(curDirection == direction.West)
+        if(curDirection == Direction.West)
             return RandomPosInZone(westEndZone);
         //else
         return RandomPosInZone(eastEndZone);
     }
 
+    private static int _tracker = 0;
+    private static ThreadLocal<System.Random> _random = new(() => {
+        var seed = (int)(System.Environment.TickCount & 0xFFFFFF00 | (byte)(Interlocked.Increment(ref _tracker) % 255));
+        var random = new System.Random(seed);
+        return random;
+    });
+
     Vector3 RandomPosInZone(ZoneEnt zone)
     {
-        Vector3 position = new Vector3(Random.Range(zone.myArea.xMin, zone.myArea.xMax), 0, Random.Range(zone.myArea.yMin, zone.myArea.yMax));
+        Vector3 position = new Vector3((_random.Value.Next() % (zone.myArea.xMax - zone.myArea.xMin)) + zone.myArea.yMin, 0, (_random.Value.Next() % (zone.myArea.yMax - zone.myArea.yMin)) + zone.myArea.yMin);
         return position;
     }
 }

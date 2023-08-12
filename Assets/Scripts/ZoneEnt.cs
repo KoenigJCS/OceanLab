@@ -13,9 +13,10 @@ public class ZoneEnt : MonoBehaviour
     }
     
     public zoneType myZoneType;
-    public direction myDirection;
+    public Direction myDirection;
     public int myID;
     public Rect myArea;
+    public Vector3 myPos;
     // Start is called before the first frame update
     void Start()
     {
@@ -24,6 +25,8 @@ public class ZoneEnt : MonoBehaviour
         myArea.xMax=transform.position.x+(transform.localScale.x/2);
         myArea.yMin=transform.position.z-(transform.localScale.z/2);
         myArea.yMax=transform.position.z+(transform.localScale.z/2);
+        myPos = transform.position;
+
     }
 
     // Update is called once per frame
@@ -33,7 +36,7 @@ public class ZoneEnt : MonoBehaviour
     }
 }
 
-public enum direction
+public enum Direction
 {
     West,
     East,
