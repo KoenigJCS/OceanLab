@@ -9,7 +9,8 @@ public class SelectionMgr : MonoBehaviour
     public BoatEntity selectedEntity;
     bool isSelecting = false;
     Vector3 mousePos1;
-    public List<int> selectedIDs = new List<int>();
+
+    public List<BoatEntity> selectedBoats = new();
     private void Awake() {
         inst = this;
     }
@@ -36,12 +37,12 @@ public class SelectionMgr : MonoBehaviour
         }
         if(Input.GetMouseButtonUp(0))
         {
-            selectedIDs.Clear();
+            selectedBoats.Clear();
             foreach(BoatEntity ent in EntityMgr.inst.boatEntities)
             {
                 if(InSelectedZone(ent.position))
                 {
-                    selectedIDs.Add(ent.ID);
+                    selectedBoats.Add(ent);
                     ent.isSelected = true;
                 }
             }
@@ -66,7 +67,7 @@ public class SelectionMgr : MonoBehaviour
         selectedEntity = EntityMgr.inst.boatEntities[selectedIndex];
         UnselectAll();
         selectedEntity.isSelected = true;
-        selectedIDs.Add(selectedEntity.ID);
+        selectedBoats.Add(selectedEntity);
     }
 
     void UnselectAll()

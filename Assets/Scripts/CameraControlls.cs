@@ -81,9 +81,9 @@ public class CameraControlls : MonoBehaviour
 
         if(Input.GetKeyUp(KeyCode.C))
         {
-            if(isRTSMode && SelectionMgr.inst.selectedIDs.Count==1)
+            if(isRTSMode && SelectionMgr.inst.selectedBoats.Count==1)
             {
-                BoatEntity boat = EntityMgr.inst.boatEntities[SelectionMgr.inst.selectedIDs[0]];
+                BoatEntity boat = SelectionMgr.inst.selectedBoats[0];
                 YawNode.transform.SetParent(boat.myCameraNode.transform);
                 YawNode.transform.localPosition = Vector3.zero;
                 YawNode.transform.localEulerAngles = Vector3.zero;

@@ -175,9 +175,13 @@ public class BoatEntity : MonoBehaviour
         Vector3 nextMove = ZoneMgr.inst.FindNextMover(position,myDirection);
         if(nextMove==Vector3.zero && (myDirection == direction.West || myDirection == direction.East))
         {
-            Destroy(this.gameObject);
+            Destroy(gameObject);
             ZoneMgr.inst.SummonShip();
-            EntityMgr.inst.boatEntities.RemoveAt(EntityMgr.inst.boatEntities.IndexOf(this));
+            EntityMgr.inst.boatEntities.Remove(this);
+            if(isSelected)
+            {
+                SelectionMgr.inst.selectedBoats.Remove(this);
+            }
         }
         else
             FindPath(nextMove);

@@ -35,9 +35,9 @@ public class ControlMgr : MonoBehaviour
                 newTarget=true;
             }
         }
-        for(int i = 0; i<SelectionMgr.inst.selectedIDs.Count; i++)
+        for(int i = 0; i<SelectionMgr.inst.selectedBoats.Count; i++)
         {
-            BoatEntity selectedEntity = EntityMgr.inst.boatEntities[SelectionMgr.inst.selectedIDs[i]];
+            BoatEntity selectedEntity = SelectionMgr.inst.selectedBoats[i];
             if(Input.GetKey(KeyCode.LeftArrow))
             {
                 selectedEntity.desiredHeading -=deltaV * Time.deltaTime * 5;
