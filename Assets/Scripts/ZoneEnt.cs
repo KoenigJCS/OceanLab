@@ -26,13 +26,6 @@ public class ZoneEnt : MonoBehaviour
         myArea.yMin=transform.position.z-(transform.localScale.z/2);
         myArea.yMax=transform.position.z+(transform.localScale.z/2);
         myPos = transform.position;
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
 

@@ -35,6 +35,7 @@ public class BoatEntity : MonoBehaviour
     public float mass;
     public Direction myDirection;
     public GameObject myCameraNode;
+    bool waitingToPath = false;
     void Start()
     {
         velocity = Vector3.zero;
@@ -56,6 +57,7 @@ public class BoatEntity : MonoBehaviour
     {
         listOFunctionsToRunInMain.Enqueue(someFunction);
     }
+    bool inFieldList = false;
     void Update()
     {
         while(listOFunctionsToRunInMain.Count>0)
@@ -63,44 +65,31 @@ public class BoatEntity : MonoBehaviour
             System.Action functionToRun =  listOFunctionsToRunInMain.Dequeue();
             functionToRun();
         }
-        if(moveState==1 && !isSelected)
+        if(moveState==1 && !isSelected && !waitingToPath)
         {
-            FindPath();
-            // lock(EntityMgr.inst.pathlessBoats)
-            // {
-            //     EntityMgr.inst.pathlessBoats.Add(this);
-            // }
+            waitingToPath =true;
+            // FindPath();
+            lock(EntityMgr.inst.pathlessBoats)
+            {
+                EntityMgr.inst.pathlessBoats.Add(this);
+            }
         }
         //Potential Feilds
         float magnitude = 0;
         Vector3 sum = Vector3.zero;
-        repelPotential = Vector3.forward;
         attractPotential = Vector3.forward;
         float range = maxSpeed-minSpeed;
         Vector3 dif;
         if(moveState!=0 && moveState!=3)
         { 
-            foreach(BoatEntity ent in EntityMgr.inst.boatEntities)
+            if(!inFieldList)
             {
-                if(ent.ID == ID)
-                    continue;
-
-                dif = ent.position - position;
-                magnitude = dif.magnitude;
-                float closestDist = Utils.ClosestDistOfApproach(position, velocity, ent.position, ent.position);
-                if ((closestDist < AIMgr.inst.tooClose * ent.mass || IsCBDR(ent)) && magnitude<AIMgr.inst.potentialDistanceMax)
-                    repelPotential += dif.normalized * ent.mass * (AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance));
+                lock(EntityMgr.inst.potentialFieldBoats)
+                {
+                    EntityMgr.inst.potentialFieldBoats.Add(this);
+                }
+                inFieldList=true;
             }
-
-            foreach(BouyEnt ent in EntityMgr.inst.bouyEntities)
-            {
-                dif = ent.transform.position - position;
-                magnitude = dif.magnitude;
-                //float closestDist = Utils.ClosestDistOfApproach(position, velocity, ent.transform.position, ent.transform.position);
-                if (magnitude < AIMgr.inst.tooClose * ent.mass)
-                    repelPotential += dif.normalized * ent.mass * (AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance));
-            }
-
             dif = Vector3.zero;
             if(moveState==2)
                 dif = pathList[0] - position;
@@ -141,6 +130,17 @@ public class BoatEntity : MonoBehaviour
                 // Debug.DrawLine(position, 3*position+netPotential, Color.blue, 0.0f);
             }
         }
+        else
+        {
+            if(inFieldList)
+            {
+                lock(EntityMgr.inst.potentialFieldBoats)
+                {
+                    EntityMgr.inst.potentialFieldBoats.Remove(this);
+                }
+                inFieldList=false;
+            }
+        }
         
         //Selection Toggle
         //selectionCircle.SetActive(isSelected);
@@ -175,6 +175,7 @@ public class BoatEntity : MonoBehaviour
         velocity.x = Mathf.Sin(heading * Mathf.Deg2Rad) * speed * EntityMgr.inst.gameSpeed;
         velocity.z = Mathf.Cos(heading * Mathf.Deg2Rad) * speed * EntityMgr.inst.gameSpeed;
         
+        
         position+=velocity * Time.deltaTime;
         transform.localPosition=position;
 
@@ -185,8 +186,8 @@ public class BoatEntity : MonoBehaviour
 
     public void FindPath()
     {
-        Debug.Log("Here!");
-        Vector3 nextMove = ZoneMgr.inst.FindNextMover(position,myDirection);
+        Vector3 here = position;
+        Vector3 nextMove = ZoneMgr.inst.FindNextMover(here,myDirection);
         if(nextMove==Vector3.zero && (myDirection == Direction.West || myDirection == Direction.East))
         {
             QueueMainThreadFunction(ObliterateThis);
@@ -230,12 +231,15 @@ public class BoatEntity : MonoBehaviour
                 FindPath(pathList[^1]);
         }
         else
+        {
             Move(ZoneMgr.inst.GetEnd(myDirection));
+            moveState=2;
+            waitingToPath=false;
+        }
     }
 
     public void Move(Vector3 newTarget)
     {
-        moveState=2;
         lock(pathList)
         {
             pathList.Add(newTarget);
@@ -264,14 +268,17 @@ public class BoatEntity : MonoBehaviour
         }
     }
 
-    bool IsCBDR(BoatEntity otherShip)
+    public bool IsCBDR(BoatEntity otherShip)
     {
         //Constant Bearing
         if(!Utils.ApproxEqual(otherShip.heading,otherShip.desiredHeading))
             return false;
         //Decreasing Range
         float curRange=(position-otherShip.position).magnitude;
-        float nextRange=(position+(velocity*Time.deltaTime)-(otherShip.position+(otherShip.velocity*Time.deltaTime))).magnitude;
+
+        //This is dubious
+        // float nextRange=(position+(velocity*Time.deltaTime)-(otherShip.position+(otherShip.velocity*Time.deltaTime))).magnitude;
+        float nextRange=(position+(velocity*.1f)-(otherShip.position+(otherShip.velocity*.1f))).magnitude;
         if(!(nextRange<curRange))
             return false;
 

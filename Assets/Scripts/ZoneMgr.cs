@@ -127,7 +127,6 @@ public class ZoneMgr : MonoBehaviour
         ent.moveState = 1;
         //ent.FindPath();
     }
-
     public Vector3 FindNextMover(Vector3 curPos, Direction curDirection)
     {
         Vector3 desination = Vector3.zero;
@@ -136,7 +135,6 @@ public class ZoneMgr : MonoBehaviour
         foreach(ZoneEnt zone in moveZoneEnts)
         {
             Vector3 delta = zone.myPos - curPos;
-            
 
             if(zone.myDirection != curDirection)
                 continue;
@@ -202,7 +200,7 @@ public class ZoneMgr : MonoBehaviour
 
     Vector3 RandomPosInZone(ZoneEnt zone)
     {
-        Vector3 position = new Vector3((_random.Value.Next() % (zone.myArea.xMax - zone.myArea.xMin)) + zone.myArea.yMin, 0, (_random.Value.Next() % (zone.myArea.yMax - zone.myArea.yMin)) + zone.myArea.yMin);
+        Vector3 position = new Vector3((_random.Value.Next() % (zone.myArea.xMax - zone.myArea.xMin)) + zone.myArea.xMin, 0, (_random.Value.Next() % (zone.myArea.yMax - zone.myArea.yMin)) + zone.myArea.yMin);
         return position;
     }
 }
