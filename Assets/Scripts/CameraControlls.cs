@@ -26,25 +26,28 @@ public class CameraControlls : MonoBehaviour
     public Vector3 currentPitchEulerAngles= Vector3.zero;
     public Vector3 currentYawEulerAngles= Vector3.zero;
     public bool isRTSMode = true;
+
+    public bool optimizeShipTextureFlag = false;
+    int frameDivider = 0;
     // Update is called once per frame
     void Update()
     {
         if(Input.GetKey(KeyCode.W))
         {
-            YawNode.transform.Translate(Vector3.forward * Time.deltaTime * cameraSenitiivity);
+            YawNode.transform.Translate(cameraSenitiivity * Time.deltaTime * Vector3.forward);
         }
         if(Input.GetKey(KeyCode.S))
         {
-            YawNode.transform.Translate(Vector3.back * Time.deltaTime * cameraSenitiivity);
+            YawNode.transform.Translate(cameraSenitiivity * Time.deltaTime * Vector3.back);
         }
 
         if(Input.GetKey(KeyCode.A))
         {
-            YawNode.transform.Translate(Vector3.left * Time.deltaTime * cameraSenitiivity);
+            YawNode.transform.Translate(cameraSenitiivity * Time.deltaTime * Vector3.left);
         }
         if(Input.GetKey(KeyCode.D))
         {
-            YawNode.transform.Translate(Vector3.right * Time.deltaTime * cameraSenitiivity);
+            YawNode.transform.Translate(cameraSenitiivity * Time.deltaTime * Vector3.right);
         }
 
         if(Input.GetKey(KeyCode.R))
@@ -101,6 +104,12 @@ public class CameraControlls : MonoBehaviour
                 YawNode.transform.localEulerAngles = Vector3.zero;
             }
             isRTSMode = !isRTSMode;
+        }
+        frameDivider++;
+        if(frameDivider==20)
+        {
+            optimizeShipTextureFlag = true;
+            frameDivider=0;
         }
     }
 }

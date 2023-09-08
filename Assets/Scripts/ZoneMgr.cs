@@ -71,7 +71,8 @@ public class ZoneMgr : MonoBehaviour
             Quaternion newRot = Random.rotation;
             newRot.x=0;
             newRot.z=0;
-            GameObject newBoat = Instantiate(allBoats[Random.Range(0, allBoats.Count)], newPos, newRot, moveables);
+            //GameObject newBoat = Instantiate(allBoats[Random.Range(0, allBoats.Count)], newPos, newRot, moveables);
+            GameObject newBoat = Instantiate(allBoats[1], newPos, newRot, moveables);
             BoatEntity ent = newBoat.GetComponent<BoatEntity>();
             switch (curZone.myDirection)
             {
@@ -105,6 +106,7 @@ public class ZoneMgr : MonoBehaviour
         newRot.x=0;
         newRot.z=0;
         GameObject newBoat = Instantiate(allBoats[Random.Range(0, allBoats.Count)], newPos, newRot, moveables);
+        //GameObject newBoat = Instantiate(allBoats[1], newPos, newRot, moveables);
         BoatEntity ent = newBoat.GetComponent<BoatEntity>();
         switch (curZone.myDirection)
         {

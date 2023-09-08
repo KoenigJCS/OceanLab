@@ -44,6 +44,17 @@ public class EntityMgr : MonoBehaviour
             curBouyEntities = new(bouyEntities);
             t2.Start();
        }
+       if(CameraControlls.inst.optimizeShipTextureFlag)
+       {
+            CameraControlls.inst.optimizeShipTextureFlag=false;
+            foreach (BoatEntity singleBoat in boatEntities)
+            {
+                if(singleBoat.GetComponent<TextureOptimizer>())
+                {
+                    singleBoat.GetComponent<TextureOptimizer>().CheckToOptimize();
+                }
+            }
+       }
     }
 
     public void ThreadedFields()
