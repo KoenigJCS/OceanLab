@@ -115,7 +115,7 @@ public class BoatEntity : MonoBehaviour
                     NextMove();
                 }
             }
-            else if(playerMove && (pathList[0]-position).magnitude < 20f)
+            else if(playerMove && (pathList[0]-position).magnitude < mass*1.5f)
             {
                 NextMove();
             }
