@@ -13,7 +13,7 @@ public class EntityMgr : MonoBehaviour
     List<BouyEnt> curBouyEntities;
     // Start is called before the first frame update
     public static EntityMgr inst;
-    public int gameSpeed;
+    public int gameSpeed =1;
     public UnityEngine.UI.Slider mySlider;
     void Awake()
     {
@@ -27,6 +27,10 @@ public class EntityMgr : MonoBehaviour
     int i1=0;
     int i2=0;
 
+    void Start()
+    {
+        SetGameSpeed();
+    }
     // Update is called once per frame
     private void Update()
     {
@@ -63,28 +67,32 @@ public class EntityMgr : MonoBehaviour
         {
             foreach(BoatEntity curEnt in potentialFieldBoats)
             {
-                float magnitude = 0f;
                 Vector3 dif = Vector3.zero;
                 Vector3 repelPotential = Vector3.zero;
-                foreach(BoatEntity selectedEnt in curBoatEntities)
+                float magnitude;
+                foreach (BoatEntity selectedEnt in curBoatEntities)
                 {
-                    if(selectedEnt.ID == curEnt.ID)
+                    if (selectedEnt.ID == curEnt.ID)
                         continue;
 
                     dif = selectedEnt.position - curEnt.position;
                     magnitude = dif.magnitude;
+                    Vector3 crossDif=Vector3.Cross(dif,Vector3.up);
                     float closestDist = Utils.ClosestDistOfApproach(curEnt.position, curEnt.velocity, selectedEnt.position, selectedEnt.position);
-                    if ((closestDist < AIMgr.inst.tooClose * selectedEnt.mass || curEnt.IsCBDR(selectedEnt)) && magnitude<AIMgr.inst.potentialDistanceMax)
-                        repelPotential += dif.normalized * selectedEnt.mass * (AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance));
+                    if ((closestDist < AIMgr.inst.tooClose * selectedEnt.mass || curEnt.IsCBDR(selectedEnt)) && magnitude < AIMgr.inst.potentialDistanceMax)
+                    {
+                        repelPotential += AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance) * selectedEnt.mass * dif.normalized;
+                        repelPotential += AIMgr.inst.aCrossAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eCrossAvoidance) * selectedEnt.mass * crossDif.normalized;
+                    }
                 }
 
-                foreach(BouyEnt selectedEnt in curBouyEntities)
+                foreach (BouyEnt selectedEnt in curBouyEntities)
                 {
                     dif = selectedEnt.myPos -curEnt.position;
                     magnitude = dif.magnitude;
                     //float closestDist = Utils.ClosestDistOfApproach(position, velocity, ent.transform.position, ent.transform.position);
                     if (magnitude < AIMgr.inst.tooClose * selectedEnt.mass)
-                        repelPotential += dif.normalized * selectedEnt.mass * (AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance));
+                        repelPotential += AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance) * selectedEnt.mass * dif.normalized;
                 }
                 curEnt.repelPotential = repelPotential;
             }

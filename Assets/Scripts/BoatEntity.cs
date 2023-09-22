@@ -23,6 +23,7 @@ public class BoatEntity : MonoBehaviour
     //public Vector3 target = Vector3.zero;
     public List<Vector3> pathList = new List<Vector3>();
     public bool playerMove = false;
+    public bool zoneFlag = true;
     public int moveState = 0;
     //0 = Dead
     //1 = Hold Positon
@@ -65,7 +66,7 @@ public class BoatEntity : MonoBehaviour
             System.Action functionToRun =  listOFunctionsToRunInMain.Dequeue();
             functionToRun();
         }
-        if(moveState==1 && !isSelected && !waitingToPath)
+        if(moveState==1 && !isSelected && !waitingToPath && zoneFlag)
         {
             waitingToPath =true;
             // FindPath();
@@ -118,7 +119,7 @@ public class BoatEntity : MonoBehaviour
             {
                 NextMove();
             }
-            attractPotential = sum.normalized * AIMgr.inst.aAttraction * Mathf.Pow(magnitude, AIMgr.inst.eAttraction);
+            attractPotential = AIMgr.inst.aAttraction * Mathf.Pow(magnitude, AIMgr.inst.eAttraction) * sum.normalized;
             //Potenial Movers
             Vector3 netPotential = attractPotential - repelPotential;
             if (moveState==2)
@@ -240,6 +241,7 @@ public class BoatEntity : MonoBehaviour
 
     public void Move(Vector3 newTarget)
     {
+        moveState=2;
         lock(pathList)
         {
             pathList.Add(newTarget);

@@ -63,7 +63,7 @@ public class SelectionMgr : MonoBehaviour
 
     void SelectNextEnt()
     {
-        selectedIndex = (selectedIndex >= EntityMgr.inst.boatEntities.Count - 1 ? 0 : selectedIndex + 1);
+        selectedIndex = selectedIndex >= EntityMgr.inst.boatEntities.Count - 1 ? 0 : selectedIndex + 1;
         selectedEntity = EntityMgr.inst.boatEntities[selectedIndex];
         UnselectAll();
         selectedEntity.isSelected = true;

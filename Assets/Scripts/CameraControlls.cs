@@ -32,6 +32,7 @@ public class CameraControlls : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         if(Input.GetKey(KeyCode.W))
         {
             YawNode.transform.Translate(cameraSenitiivity * Time.deltaTime * Vector3.forward);
@@ -52,11 +53,11 @@ public class CameraControlls : MonoBehaviour
 
         if(Input.GetKey(KeyCode.R))
         {
-            YawNode.transform.Translate(Vector3.up * Time.deltaTime * cameraSenitiivity);
+            YawNode.transform.Translate(cameraSenitiivity * Time.deltaTime * Vector3.up);
         }
         if(Input.GetKey(KeyCode.F))
         {
-            YawNode.transform.Translate(Vector3.down * Time.deltaTime * cameraSenitiivity);
+            YawNode.transform.Translate(cameraSenitiivity * Time.deltaTime * Vector3.down);
         }
 
         currentYawEulerAngles = YawNode.transform.localEulerAngles;

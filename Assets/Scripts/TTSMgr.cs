@@ -6,11 +6,6 @@ public class TTSMgr : MonoBehaviour
 {
     // Start is called before the first frame update
     public Voxell.Speech.TTS.TextToSpeech textToSpeech;
-
-    void start()
-    {
-        
-    }
     void Update() 
     {
         if(Input.GetKeyDown(KeyCode.P))
