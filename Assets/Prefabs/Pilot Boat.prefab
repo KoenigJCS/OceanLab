@@ -257,6 +257,8 @@ MonoBehaviour:
   desiredHeading: 0
   evasionMode: 0
   pathList: []
+  playerMove: 0
+  zoneFlag: 1
   moveState: 0
   acceleration: 7
   turnRate: 15

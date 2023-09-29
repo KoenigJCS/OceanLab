@@ -20,30 +20,32 @@ public class AjacencyScriptTest : MonoBehaviour
             for(int i = 0;i<1;i++)
             {
                 //Boat 4 way intersection
-                /*
-                BoatEntity b1 = SummonShip(Vector3.forward*1000+(1500 * count * Vector3.left),Quaternion.Euler(0,180,0),3);
-                BoatEntity b2 = SummonShip(Vector3.left*1000+(1500 * count * Vector3.left),Quaternion.Euler(0,90,0),3);
-                BoatEntity b3 = SummonShip(Vector3.right*1000+(1500 * count * Vector3.left),Quaternion.Euler(0,-90,0),3);
-                BoatEntity b4 = SummonShip(Vector3.back*1000+(1500 * count * Vector3.left),Quaternion.Euler(0,0,0),3);
+                
+                // BoatEntity b1 = SummonShip(Vector3.forward*1000+(1500 * count * Vector3.left),Quaternion.Euler(0,180,0),3);
+                // BoatEntity b2 = SummonShip(Vector3.left*1000+(1500 * count * Vector3.left),Quaternion.Euler(0,90,0),3);
+                // BoatEntity b3 = SummonShip(Vector3.right*1000+(1500 * count * Vector3.left),Quaternion.Euler(0,-90,0),3);
+                // BoatEntity b4 = SummonShip(Vector3.back*1000+(1500 * count * Vector3.left),Quaternion.Euler(0,0,0),3);
 
-                b1.Move(Vector3.back*2000+(1500 * count * Vector3.left));
-                b1.playerMove=true;
-                b1.gameObject.AddComponent<DataCollector>();
-                b1.GetComponent<DataCollector>().collisionTarget=b2;
+                // b1.Move(Vector3.back*2000+(1500 * count * Vector3.left));
+                // b1.playerMove=true;
+                // b1.gameObject.AddComponent<DataCollector>();
+                // b1.GetComponent<DataCollector>().collisionTarget=b2;
 
-                b2.Move(Vector3.right*2000+(1500 * count * Vector3.left));
-                b2.playerMove=true;
-                b2.gameObject.AddComponent<DataCollector>();
-                b2.GetComponent<DataCollector>().collisionTarget=b3;
+                // b2.Move(Vector3.right*2000+(1500 * count * Vector3.left));
+                // b2.playerMove=true;
+                // b2.gameObject.AddComponent<DataCollector>();
+                // b2.GetComponent<DataCollector>().collisionTarget=b3;
 
-                b3.Move(Vector3.left*2000+(1500 * count * Vector3.left));
-                b3.playerMove=true;
-                b3.gameObject.AddComponent<DataCollector>();
-                b3.GetComponent<DataCollector>().collisionTarget=b4;
+                // b3.Move(Vector3.left*2000+(1500 * count * Vector3.left));
+                // b3.playerMove=true;
+                // b3.gameObject.AddComponent<DataCollector>();
+                // b3.GetComponent<DataCollector>().collisionTarget=b4;
 
-                b4.Move(Vector3.forward*2000+(1500 * count * Vector3.left));
-                b4.playerMove=true;
-                */
+                // b4.Move(Vector3.forward*2000+(1500 * count * Vector3.left));
+                // b4.playerMove=true;
+
+
+                // //Many Tiny Boats
                 List<BoatEntity> tinyBoats = new();
                 for(int o = 0;o<5;o++)
                 {

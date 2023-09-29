@@ -77,10 +77,10 @@ namespace ACTA
             //addToSpeechQueue(msg);
         }
 
-        private void Awake()
-        {
-            changeVoice(voiceIdx);
-        }
+        // private void Awake()
+        // {
+        //     changeVoice(voiceIdx);
+        // }
         
         public void TestSpeech()
         {
