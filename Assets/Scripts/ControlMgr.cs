@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using UnityEngine;
+
 
 public class ControlMgr : MonoBehaviour
 {
@@ -9,6 +11,20 @@ public class ControlMgr : MonoBehaviour
     public GameObject target;
     bool newTarget = false;
     RaycastHit hit;
+    public enum ControlType
+    {
+        KeyboardMouse,
+        Controller,
+        SteamDeck
+    }
+
+    public ControlType curControlType = ControlType.KeyboardMouse;
+
+    public void SetControlType(int newType)
+    {
+        curControlType = (ControlType)newType;
+    }
+    
     void Awake()
     {
         inst = this;
@@ -16,63 +32,129 @@ public class ControlMgr : MonoBehaviour
 
     void start()
     {
-
+        
     }
+
+
+    
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Period))
+        switch (curControlType)
         {
-            ZoneMgr.inst.PopulateSummon();
-        }
+            case ControlType.KeyboardMouse:
+            if(Input.GetKeyDown(KeyCode.Period))
+            {
+                ZoneMgr.inst.PopulateSummon();
+            }
 
-        if(Input.GetMouseButtonDown(1))
-        {
-            Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
-            int watermask = 1<<4;
-            if(Physics.Raycast(ray, out hit, 6000f, watermask))
+            if(Input.GetMouseButtonDown(1))
             {
-                newTarget=true;
+                Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+                int watermask = 1<<4;
+                if(Physics.Raycast(ray, out hit, 6000f, watermask))
+                {
+                    newTarget=true;
+                }
             }
+            for(int i = 0; i<SelectionMgr.inst.selectedBoats.Count; i++)
+            {
+                BoatEntity selectedEntity = SelectionMgr.inst.selectedBoats[i];
+                if(Input.GetKey(KeyCode.LeftArrow))
+                {
+                    selectedEntity.desiredHeading -=deltaV * Time.deltaTime * 5;
+                }
+                if(Input.GetKey(KeyCode.RightArrow))
+                {
+                    selectedEntity.desiredHeading +=deltaV * Time.deltaTime * 5;
+                }
+                if(Input.GetKeyUp(KeyCode.UpArrow))
+                {
+                    selectedEntity.desiredSpeed += deltaV;
+                }
+                if(Input.GetKeyUp(KeyCode.DownArrow))
+                {
+                    selectedEntity.desiredSpeed -= deltaV;
+                }
+                if(Input.GetKeyUp(KeyCode.Space))
+                {
+                    selectedEntity.desiredSpeed = 0;
+                }
+                
+                if(newTarget && Input.GetKey(KeyCode.LeftControl))
+                {
+                    selectedEntity.playerMove = true;
+                    selectedEntity.Move(hit.point);
+                }
+                else if(newTarget)
+                {
+                    selectedEntity.Stop();
+                    selectedEntity.playerMove = true;
+                    selectedEntity.Move(hit.point);
+                }
+                
+            }
+            newTarget=false;        
+            break;
+            case ControlType.Controller:
+            //Not Implemented
+            break;
+            case ControlType.SteamDeck:
+            if(Input.GetKeyDown(KeyCode.Period))
+            {
+                ZoneMgr.inst.PopulateSummon();
+            }
+
+            if(Input.GetMouseButtonDown(1))
+            {
+                Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+                int watermask = 1<<4;
+                if(Physics.Raycast(ray, out hit, 6000f, watermask))
+                {
+                    newTarget=true;
+                }
+            }
+            for(int i = 0; i<SelectionMgr.inst.selectedBoats.Count; i++)
+            {
+                BoatEntity selectedEntity = SelectionMgr.inst.selectedBoats[i];
+                if(Input.GetKey(KeyCode.LeftArrow))
+                {
+                    selectedEntity.desiredHeading -=deltaV * Time.deltaTime * 5;
+                }
+                if(Input.GetKey(KeyCode.RightArrow))
+                {
+                    selectedEntity.desiredHeading +=deltaV * Time.deltaTime * 5;
+                }
+                if(Input.GetKeyUp(KeyCode.UpArrow))
+                {
+                    selectedEntity.desiredSpeed += deltaV;
+                }
+                if(Input.GetKeyUp(KeyCode.DownArrow))
+                {
+                    selectedEntity.desiredSpeed -= deltaV;
+                }
+                if(Input.GetKeyUp(KeyCode.Space))
+                {
+                    selectedEntity.desiredSpeed = 0;
+                }
+                
+                if(newTarget && Input.GetKey(KeyCode.LeftControl))
+                {
+                    selectedEntity.playerMove = true;
+                    selectedEntity.Move(hit.point);
+                }
+                else if(newTarget)
+                {
+                    selectedEntity.Stop();
+                    selectedEntity.playerMove = true;
+                    selectedEntity.Move(hit.point);
+                }
+                
+            }
+            newTarget=false;   
+
+            break;
         }
-        for(int i = 0; i<SelectionMgr.inst.selectedBoats.Count; i++)
-        {
-            BoatEntity selectedEntity = SelectionMgr.inst.selectedBoats[i];
-            if(Input.GetKey(KeyCode.LeftArrow))
-            {
-                selectedEntity.desiredHeading -=deltaV * Time.deltaTime * 5;
-            }
-            if(Input.GetKey(KeyCode.RightArrow))
-            {
-                selectedEntity.desiredHeading +=deltaV * Time.deltaTime * 5;
-            }
-            if(Input.GetKeyUp(KeyCode.UpArrow))
-            {
-                selectedEntity.desiredSpeed += deltaV;
-            }
-            if(Input.GetKeyUp(KeyCode.DownArrow))
-            {
-                selectedEntity.desiredSpeed -= deltaV;
-            }
-            if(Input.GetKeyUp(KeyCode.Space))
-            {
-                selectedEntity.desiredSpeed = 0;
-            }
-            
-            if(newTarget && Input.GetKey(KeyCode.LeftControl))
-            {
-                selectedEntity.playerMove = true;
-                selectedEntity.Move(hit.point);
-            }
-            else if(newTarget)
-            {
-                selectedEntity.Stop();
-                selectedEntity.playerMove = true;
-                selectedEntity.Move(hit.point);
-            }
-            
-        }
-        newTarget=false;        
     }
 
     public void CreatePoints(float px, float pz, int radius, Color color)
