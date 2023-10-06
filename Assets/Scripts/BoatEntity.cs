@@ -42,6 +42,7 @@ public class BoatEntity : MonoBehaviour
         velocity = Vector3.zero;
         position = transform.localPosition;
         heading = transform.eulerAngles.y;
+        desiredHeading = heading;
         repelPotential = Vector3.zero;
         attractPotential = Vector3.zero;
         line = GetComponent<LineRenderer>();
@@ -115,10 +116,11 @@ public class BoatEntity : MonoBehaviour
                     NextMove();
                 }
             }
-            else if(playerMove && (pathList[0]-position).magnitude < 20f)
+            else if(pathList.Count>0 && playerMove && (pathList[0]-position).magnitude < mass*1.5f)
             {
                 NextMove();
             }
+            
             attractPotential = AIMgr.inst.aAttraction * Mathf.Pow(magnitude, AIMgr.inst.eAttraction) * sum.normalized;
             //Potenial Movers
             Vector3 netPotential = attractPotential - repelPotential;

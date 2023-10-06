@@ -81,8 +81,16 @@ public class EntityMgr : MonoBehaviour
                     float closestDist = Utils.ClosestDistOfApproach(curEnt.position, curEnt.velocity, selectedEnt.position, selectedEnt.position);
                     if ((closestDist < AIMgr.inst.tooClose * selectedEnt.mass || curEnt.IsCBDR(selectedEnt)) && magnitude < AIMgr.inst.potentialDistanceMax)
                     {
+                        //Idea 1 relatve angle fields
+                        // float angleRatio = Mathf.Clamp(Mathf.Abs(Mathf.Sin(Mathf.Deg2Rad*Mathf.Clamp(curEnt.heading-selectedEnt.heading,-120f,120f)))+.4f,.4f,1f);
+                        // repelPotential += angleRatio* AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance) * selectedEnt.mass * dif.normalized;
+                        // repelPotential += angleRatio* AIMgr.inst.aCrossAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eCrossAvoidance) * selectedEnt.mass * crossDif.normalized;
+
+                        //Idea 2 trig
                         repelPotential += AIMgr.inst.aAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eAvoidance) * selectedEnt.mass * dif.normalized;
                         repelPotential += AIMgr.inst.aCrossAvoidance * Mathf.Pow(magnitude, AIMgr.inst.eCrossAvoidance) * selectedEnt.mass * crossDif.normalized;
+                        repelPotential.x*= Mathf.Clamp(Mathf.Abs(Mathf.Sin(Mathf.Deg2Rad*selectedEnt.heading))+0.5f,0.5f,1f);
+                        repelPotential.z*= Mathf.Clamp(Mathf.Abs(Mathf.Cos(Mathf.Deg2Rad*selectedEnt.heading))+0.5f,0.5f,1f);
                     }
                 }
 
