@@ -2,7 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using UnityEngine;
+using UnityEngine.Animations;
 
+public enum ControlType
+{
+    KeyboardMouse,
+    Controller,
+    SteamDeck
+}
 
 public class ControlMgr : MonoBehaviour
 {
@@ -11,12 +18,6 @@ public class ControlMgr : MonoBehaviour
     public GameObject target;
     bool newTarget = false;
     RaycastHit hit;
-    public enum ControlType
-    {
-        KeyboardMouse,
-        Controller,
-        SteamDeck
-    }
 
     public ControlType curControlType = ControlType.KeyboardMouse;
 
@@ -35,7 +36,7 @@ public class ControlMgr : MonoBehaviour
         
     }
 
-
+    bool summonFlag = true;
     
     // Update is called once per frame
     void Update()
@@ -104,6 +105,15 @@ public class ControlMgr : MonoBehaviour
             {
                 ZoneMgr.inst.PopulateSummon();
             }
+            // if(Input.GetAxis("Fire3")>0.5f && summonFlag)
+            // {
+            //     ZoneMgr.inst.PopulateSummon();
+            //     summonFlag=false;
+            // }
+            // else if(Input.GetAxis("Fire3")<0.5f && !summonFlag)
+            // {
+            //     summonFlag=true;
+            // }
 
             if(Input.GetMouseButtonDown(1))
             {
@@ -117,6 +127,7 @@ public class ControlMgr : MonoBehaviour
             for(int i = 0; i<SelectionMgr.inst.selectedBoats.Count; i++)
             {
                 BoatEntity selectedEntity = SelectionMgr.inst.selectedBoats[i];
+
                 if(Input.GetKey(KeyCode.LeftArrow))
                 {
                     selectedEntity.desiredHeading -=deltaV * Time.deltaTime * 5;
@@ -137,6 +148,7 @@ public class ControlMgr : MonoBehaviour
                 {
                     selectedEntity.desiredSpeed = 0;
                 }
+                
                 
                 if(newTarget && Input.GetKey(KeyCode.LeftControl))
                 {
