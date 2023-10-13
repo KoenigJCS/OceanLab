@@ -127,6 +127,8 @@ public class CameraControlls : MonoBehaviour
             {
                 float xAxis = Input.GetAxis("Horizontal");
                 YawNode.transform.Translate(xAxis*cameraSenitiivity * Time.deltaTime * Vector3.right);
+                float yAxis = Input.GetAxis("Vertical");
+                YawNode.transform.Translate(yAxis*cameraSenitiivity * Time.deltaTime * Vector3.forward);
                 if(Input.GetKey(KeyCode.W))
                 {
                     YawNode.transform.Translate(cameraSenitiivity * Time.deltaTime * Vector3.forward);
